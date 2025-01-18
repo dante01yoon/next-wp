@@ -5,7 +5,7 @@ type SiteConfig = {
 };
 
 export const siteConfig: SiteConfig = {
-  site_name: "next-wp",
-  site_description: "Starter template for Headless WordPress with Next.js",
-  site_domain: "https://next-wp.com",
+  site_name: process.env.SITE_NAME || "default-site-name",
+  site_description: process.env.SITE_DESCRIPTION || "default description",
+  site_domain: process.env.SITE_DOMAIN || "https://default-domain.com",
 };
