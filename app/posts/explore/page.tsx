@@ -85,7 +85,7 @@ export default async function ExplorerPage() {
                     <div>
                       <span className="text-sm font-medium">Category: </span>
                       <Link 
-                        href={`/posts/?category=${post.categories?.[0]}`}
+                        href={`/posts/?category=${post.categoryName}`}
                         className="text-sm text-primary hover:underline"
                       >
                         {post.categoryName}

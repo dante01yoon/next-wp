@@ -1,5 +1,4 @@
 import { getAllPosts, getAllCategories, getAllTags } from "@/lib/wordpress";
-import { Section, Container, Prose } from "@/components/craft";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Metadata } from "next";
@@ -59,14 +58,14 @@ export default async function TrendingPage() {
   const { topics, recentPosts, totalPosts } = await getTopicStats();
 
   return (
-    <Section>
-      <Container>
-        <Prose className="mb-12">
+    <section className="py-12">
+      <div className="container mx-auto px-4">
+        <div className="prose max-w-none mb-12">
           <h1>Trending Topics</h1>
           <p className="lead">
             Explore our most discussed topics and latest content across {totalPosts} posts.
           </p>
-        </Prose>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Popular Topics Column */}
@@ -113,7 +112,7 @@ export default async function TrendingPage() {
             </div>
           </div>
         </div>
-      </Container>
-    </Section>
+      </div>
+    </section>
   );
 } 
