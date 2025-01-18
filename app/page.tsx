@@ -16,6 +16,53 @@ export default function Home() {
     <Section>
       <Container>
         <ToDelete />
+        
+        {/* New Examples Section */}
+        <div className="mt-16">
+          <Prose>
+            <h2>Examples</h2>
+            <p>Explore these example implementations of the WordPress API integration.</p>
+          </Prose>
+
+          <div className="grid md:grid-cols-2 gap-4 mt-6">
+            <Link
+              className="border h-48 bg-accent/50 rounded-lg p-4 flex flex-col justify-between hover:scale-[1.02] transition-all"
+              href="/authors/featured"
+            >
+              <User size={32} />
+              <span>
+                Featured Authors{" "}
+                <span className="block text-sm text-muted-foreground">
+                  Showcase of top authors and their recent posts
+                </span>
+              </span>
+            </Link>
+            <Link
+              className="border h-48 bg-accent/50 rounded-lg p-4 flex flex-col justify-between hover:scale-[1.02] transition-all"
+              href="/trending"
+            >
+              <Diamond size={32} />
+              <span>
+                Trending Topics{" "}
+                <span className="block text-sm text-muted-foreground">
+                  Discover popular categories and tags across the blog
+                </span>
+              </span>
+            </Link>
+            <Link
+              className="border h-48 bg-accent/50 rounded-lg p-4 flex flex-col justify-between hover:scale-[1.02] transition-all"
+              href="/posts/explore"
+            >
+              <Tag size={32} />
+              <span>
+                Post Explorer{" "}
+                <span className="block text-sm text-muted-foreground">
+                  Interactive explorer for related content discovery
+                </span>
+              </span>
+            </Link>
+          </div>
+        </div>
       </Container>
     </Section>
   );
