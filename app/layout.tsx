@@ -24,12 +24,11 @@ const font = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: "WordPress & Next.js Starter by 9d8",
-  description:
-    "A starter template for Next.js with WordPress as a headless CMS.",
+  title: siteConfig.site_name,
+  description: siteConfig.site_description,
   metadataBase: new URL(siteConfig.site_domain),
   alternates: {
-    canonical: "/",
+    canonical: `${siteConfig.site_domain}/`, // Uses SITE_DOMAIN
   },
 };
 
@@ -58,7 +57,7 @@ export default function RootLayout({
   );
 }
 
-const Nav = ({ className, children, id }: NavProps) => {
+const Nav = ({ className, children, id }: { className?: string; children?: React.ReactNode; id?: string }) => {
   return (
     <nav
       className={cn("sticky z-50 top-0 bg-background", "border-b", className)}
