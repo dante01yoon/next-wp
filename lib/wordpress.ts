@@ -73,7 +73,7 @@ async function wordpressFetch<T>(
       ...options.headers,
     },
   });
-
+  const body = await response.json();
   if (!response.ok) {
     throw new WordPressAPIError(
       `WordPress API request failed: ${response.statusText}`,
@@ -82,7 +82,7 @@ async function wordpressFetch<T>(
     );
   }
 
-  return response.json();
+  return body;
 }
 
 // WordPress Functions
@@ -393,16 +393,20 @@ export async function getPostsByTagSlug(tagSlug: string): Promise<Post[]> {
   return response;
 }
 
-export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia> {
+export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia | null> {
   const url = getUrl(`/wp-json/wp/v2/media/${id}`);
-  const response = await wordpressFetch<FeaturedMedia>(url, {
-    next: {
-      ...defaultFetchOptions.next,
-      tags: ["wordpress", `media-${id}`],
-    },
-  });
-
-  return response;
+  try {
+    const response = await wordpressFetch<FeaturedMedia>(url, {
+      next: {
+        ...defaultFetchOptions.next,
+        tags: ["wordpress", `media-${id}`],
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error('Error fetching featured media:', error);
+    return null;
+  }
 }
 
 // Helper function to search across categories
