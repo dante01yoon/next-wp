@@ -5,10 +5,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: `${process.env.WORDPRESS_URL}`,
+        hostname: `${process.env.WORDPRESS_ADMIN_URL}`,
         port: "",
         pathname: "/**",
       },
+      new URL(`${process.env.WORDPRESS_ADMIN_URL}/**`),
     ],
   },
   eslint: {
@@ -21,7 +22,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/admin',
-        destination: `${process.env.WORDPRESS_URL}/wp-admin`,
+        destination: `${process.env.WORDPRESS_ADMIN_URL}/wp-admin`,
       },
     ];
   },
