@@ -6,15 +6,18 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/nav/mobile-nav";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { CartBadge } from "@/components/cart/cart-badge";
 import { mainMenu, contentMenu } from "@/menu.config";
 import { Section, Container } from "@/components/craft";
 import { Analytics } from "@vercel/analytics/react";
+import { CartProvider } from "@/contexts/cart-context";
 import { siteConfig } from "@/site.config";
 
 import Balancer from "react-wrap-balancer";
 import Logo from "@/public/logo.svg";
 import Image from "next/image";
 import Link from "next/link";
+import { ShoppingCart } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -47,9 +50,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Nav />
-          {children}
-          <Footer />
+          <CartProvider>
+            <Nav />
+            {children}
+            <Footer />
+          </CartProvider>
         </ThemeProvider>
         <Analytics />
       </body>
@@ -92,6 +97,7 @@ const Nav = ({ className, children, id }: { className?: string; children?: React
               </Button>
             ))}
           </div>
+          <CartBadge className="hidden md:flex" />
           <Button asChild className="hidden sm:flex">
             <Link href="https://github.com/9d8dev/next-wp">Get Started</Link>
           </Button>

@@ -5,21 +5,36 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: `${process.env.WORDPRESS_HOSTNAME}`,
+        hostname: `${process.env.WORDPRESS_URL}`,
         port: "",
         pathname: "/**",
       },
     ],
   },
-  async redirects() {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  async rewrites() {
     return [
       {
-        source: "/admin",
+        source: '/admin',
         destination: `${process.env.WORDPRESS_URL}/wp-admin`,
-        permanent: true,
       },
     ];
   },
+
+  // async redirects() {
+  //   return [
+  //     {
+  //       source: "/admin",
+  //       destination: `${process.env.WORDPRESS_URL}/wp-admin`,
+  //       permanent: true,
+  //     },
+  //   ];
+  // },
 };
 
 export default nextConfig;

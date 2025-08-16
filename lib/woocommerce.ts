@@ -14,7 +14,7 @@ import type {
 } from './woocommerce-types';
 
 const api = new WooCommerceRestApi({
-  url: process.env.WOOCOMMERCE_URL || "http://example.com",
+  url: process.env.WORDPRESS_URL || "http://example.com",
   consumerKey: process.env.WOOCOMMERCE_CONSUMER_KEY || "",
   consumerSecret: process.env.WOOCOMMERCE_CONSUMER_SECRET || "",
   version: "wc/v3"
@@ -195,6 +195,42 @@ export async function updateProductStock(id: number, stockQuantity: number): Pro
     stock_quantity: stockQuantity,
     stock_status: stockQuantity > 0 ? 'instock' : 'outofstock'
   });
+}
+
+// Cart API Functions
+export async function addToWooCommerceCart(productId: number, quantity: number = 1): Promise<any> {
+  const response = await api.post("cart/add-item", {
+    id: productId,
+    quantity: quantity
+  });
+  return response.data;
+}
+
+export async function getCartItems(): Promise<any[]> {
+  const response = await api.get("cart/items");
+  return response.data;
+}
+
+export async function updateCartItem(key: string, quantity: number): Promise<any> {
+  const response = await api.put(`cart/items/${key}`, {
+    quantity: quantity
+  });
+  return response.data;
+}
+
+export async function removeCartItem(key: string): Promise<any> {
+  const response = await api.delete(`cart/items/${key}`);
+  return response.data;
+}
+
+export async function clearWooCommerceCart(): Promise<any> {
+  const response = await api.delete("cart/items");
+  return response.data;
+}
+
+export async function getCartTotals(): Promise<any> {
+  const response = await api.get("cart/totals");
+  return response.data;
 }
 
 export default api;

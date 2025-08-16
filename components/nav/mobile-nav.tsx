@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { mainMenu, contentMenu } from "@/menu.config";
 import { siteConfig } from "@/site.config";
+import { CartBadge } from "@/components/cart/cart-badge";
 
 export function MobileNav() {
   const [open, setOpen] = React.useState(false);
@@ -60,6 +61,9 @@ export function MobileNav() {
                 {key.charAt(0).toUpperCase() + key.slice(1)}
               </MobileLink>
             ))}
+            <div className="w-full">
+              <CartBadge showText onOpenChange={setOpen} className="w-full justify-start p-0 h-auto text-lg" />
+            </div>
             <h3 className="text-small pt-6">Blog Menu</h3>
             <Separator />
             {Object.entries(contentMenu).map(([key, href]) => (
