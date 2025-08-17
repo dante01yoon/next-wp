@@ -8,6 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { getProducts } from '@/lib/woocommerce';
 import { ArrowLeft, Star, Clock, Users, Download, Globe } from 'lucide-react';
 import { AddToCartButton } from '@/components/cart/add-to-cart-button';
+import { isWooCommerceProductFree } from '@/lib/tutor-course-utils';
+import { FreeEnrollButton } from '@/components/courses/free-enroll-button';
 
 interface CourseDetailPageProps {
   params: {
@@ -16,10 +18,11 @@ interface CourseDetailPageProps {
 }
 
 export default async function CourseDetailPage({ params }: CourseDetailPageProps) {
+  const { slug } = await params;
   try {
     // Fetch the course by slug
     const courses = await getProducts({
-      slug: params.slug,
+      slug,
       per_page: 1,
       status: 'publish'
     });
@@ -160,10 +163,18 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
                 {/* Action Buttons */}
                 <div className="space-y-3">
-                  {price === '0' || price === '' ? (
-                    <Button className="w-full" size="lg">
-                      Enroll for Free
-                    </Button>
+                  {isWooCommerceProductFree(course) ? (
+                    <FreeEnrollButton 
+                      course={{
+                        id: course.id,
+                        slug: course.slug,
+                        name: course.name,
+                        price: course.price,
+                        price_type: course.price === '0' || course.price === '' ? 'free' : 'paid'
+                      }}
+                      size="lg"
+                      className="w-full"
+                    />
                   ) : (
                     <>
                       <Button className="w-full" size="lg">

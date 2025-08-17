@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/card';
 import { WooCommerceProduct } from '@/lib/woocommerce-types';
 import { useCartContext } from '@/contexts/cart-context';
+import { isWooCommerceProductFree } from '@/lib/tutor-course-utils';
+import { FreeEnrollButton } from './free-enroll-button';
 
 interface CourseCardProps {
   course: WooCommerceProduct;
@@ -123,21 +125,45 @@ export default function CourseCard({ course }: CourseCardProps) {
 
       <CardFooter className="pt-0">
         <div className="flex gap-2 w-full">
-          <Button asChild className="flex-1">
-            <Link href={`/courses/${course.slug}`}>
-              View Course
-            </Link>
-          </Button>
-          
-          {price !== '0' && price !== '' && (
-            <Button 
-              variant={isInCartAlready ? "secondary" : "outline"} 
-              className="flex-1"
-              onClick={handleAddToCart}
-              disabled={isInCartAlready}
-            >
-              {isInCartAlready ? 'In Cart' : 'Add to Cart'}
-            </Button>
+          {/* Check if course is free using WooCommerce product price */}
+          {isWooCommerceProductFree(course) ? (
+            <div className="w-full space-y-2">
+              <FreeEnrollButton 
+                course={{
+                  id: course.id,
+                  slug: course.slug,
+                  name: course.name,
+                  price: course.price,
+                  price_type: course.price === '0' || course.price === '' ? 'free' : 'paid'
+                }}
+                size="sm"
+                className="w-full"
+              />
+              <Button asChild variant="outline" size="sm" className="w-full">
+                <Link href={`/courses/${course.slug}`}>
+                  View Details
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button asChild className="flex-1">
+                <Link href={`/courses/${course.slug}`}>
+                  View Course
+                </Link>
+              </Button>
+              
+              {price !== '0' && price !== '' && (
+                <Button 
+                  variant={isInCartAlready ? "secondary" : "outline"} 
+                  className="flex-1"
+                  onClick={handleAddToCart}
+                  disabled={isInCartAlready}
+                >
+                  {isInCartAlready ? 'In Cart' : 'Add to Cart'}
+                </Button>
+              )}
+            </>
           )}
         </div>
       </CardFooter>

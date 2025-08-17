@@ -12,6 +12,11 @@ export * from './woocommerce-types';
 // Tutor LMS exports
 export * from './tutor-lms';
 export * from './tutor-lms-types';
+export * from './tutor-course-utils';
+export * from './tutor-enrollment';
+export * from './tutor-enrollment-sync';
+export * from './tutor-api-client';
+export * from './auth-context';
 
 // Utility exports
 export * from './utils';

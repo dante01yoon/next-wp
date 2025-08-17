@@ -3,7 +3,6 @@
 // Types are imported from `tutor-lms-types.ts`
 
 import querystring from "query-string";
-import { revalidateTag } from "next/cache";
 
 import {
   TutorCourse,
@@ -26,9 +25,15 @@ import {
 // Tutor LMS Config
 const baseUrl = process.env.WORDPRESS_URL; // Same as WordPress URL since Tutor LMS extends WP
 const tutorApiPath = "/wp-json/tutor/v1";
+const tutorApiKey = process.env.TUTOR_LMS_API_KEY;
+const tutorApiSecret = process.env.TUTOR_LMS_SECRET;
 
 if (!baseUrl) {
   throw new Error("WORDPRESS_URL environment variable is not defined");
+}
+
+if (!tutorApiKey || !tutorApiSecret) {
+  throw new Error("TUTOR_LMS_API_KEY and TUTOR_LMS_SECRET environment variables are required");
 }
 
 // Utility type for fetch options
@@ -45,6 +50,12 @@ function getTutorUrl(path: string, query?: Record<string, any>) {
   return `${baseUrl}${tutorApiPath}${path}${params ? `?${params}` : ""}`;
 }
 
+// Create Basic Auth header for Tutor LMS API
+const createAuthHeader = () => {
+  const credentials = `${tutorApiKey}:${tutorApiSecret}`;
+  return `Basic ${btoa(credentials)}`;
+};
+
 // Default fetch options for Tutor LMS API calls
 const defaultFetchOptions: FetchOptions = {
   next: {
@@ -54,6 +65,7 @@ const defaultFetchOptions: FetchOptions = {
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
+    Authorization: createAuthHeader(),
   },
 };
 
@@ -245,16 +257,34 @@ export async function getTutorCourseRatings(
 
 /**
  * Revalidate Tutor LMS cache
+ * Only works on server-side
  */
-export function revalidateTutorCache() {
-  revalidateTag("tutor-lms");
+export async function revalidateTutorCache() {
+  // Only execute on server-side
+  if (typeof window === 'undefined') {
+    try {
+      const { revalidateTag } = await import('next/cache');
+      revalidateTag("tutor-lms");
+    } catch (error) {
+      console.warn('Failed to revalidate cache:', error);
+    }
+  }
 }
 
 /**
  * Revalidate specific course cache
+ * Only works on server-side
  */
-export function revalidateTutorCourse(courseId: number) {
-  revalidateTag(`tutor-course-${courseId}`);
+export async function revalidateTutorCourse(courseId: number) {
+  // Only execute on server-side
+  if (typeof window === 'undefined') {
+    try {
+      const { revalidateTag } = await import('next/cache');
+      revalidateTag(`tutor-course-${courseId}`);
+    } catch (error) {
+      console.warn('Failed to revalidate course cache:', error);
+    }
+  }
 }
 
 /**
