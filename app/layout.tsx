@@ -15,6 +15,7 @@ const font = FontSans({
   variable: "--font-sans",
 });
 
+console.log('siteConfig: ', siteConfig);
 export const metadata: Metadata = {
   title: siteConfig.site_name,
   description: siteConfig.site_description,
@@ -42,7 +43,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LayoutWrapper isProxyAccess={isProxy}>
+          <LayoutWrapper isProxyAccess={isProxy} {...metadata}>
             {children}
           </LayoutWrapper>
         </ThemeProvider>
