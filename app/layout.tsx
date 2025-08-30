@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Analytics } from "@vercel/analytics/react";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { siteConfig } from "@/site.config";
+import { isProxyAccess } from "@/lib/proxy-detection";
 
 import { cn } from "@/lib/utils";
 
@@ -23,11 +24,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // 서버에서 프록시 접근 감지
+  const isProxy = await isProxyAccess();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -38,7 +42,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LayoutWrapper>
+          <LayoutWrapper isProxyAccess={isProxy}>
             {children}
           </LayoutWrapper>
         </ThemeProvider>

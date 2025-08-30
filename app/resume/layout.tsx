@@ -21,12 +21,9 @@ export default function ResumeLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head />
-      <body className={cn("min-h-screen font-sans antialiased", font.variable)}>
-        {children}
-        <Analytics />
-      </body>
-    </html>
+    <div>
+      {children}
+      <Analytics />
+    </div>
   );
 }

@@ -19,17 +19,20 @@ import { cn } from "@/lib/utils";
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
+  isProxyAccess: boolean;
 }
 
-export function LayoutWrapper({ children }: LayoutWrapperProps) {
+export function LayoutWrapper({ children, isProxyAccess }: LayoutWrapperProps) {
   const pathname = usePathname();
+  
   const isResumePage = pathname === '/resume';
+  const shouldHideLayout = isResumePage && isProxyAccess;
 
   return (
     <CartProvider>
-      {!isResumePage && <Nav />}
+      {!shouldHideLayout && <Nav />}
       {children}
-      {!isResumePage && <Footer />}
+      {!shouldHideLayout && <Footer />}
     </CartProvider>
   );
 }
