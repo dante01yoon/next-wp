@@ -1,17 +1,14 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import { Section, Container, Prose } from "@/components/craft";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, ExternalLink } from "lucide-react";
+import { Download, FileText, ExternalLink, Loader2 } from "lucide-react";
 import Balancer from "react-wrap-balancer";
 
-export const metadata = {
-  title: "Resume | Dante",
-  description: "Professional resume and CV",
-  robots: { index: true, follow: true }, // 검색엔진 차단
-};
-
 export default function ResumePage() {
+  const [isLoading, setIsLoading] = useState(true);
   const embedUrl = `https://docs.google.com/document/d/${process.env.NEXT_PUBLIC_RESUME_EMBED_ID}`;
 
   const pdfUrl = `https://docs.google.com/document/d/${process.env.NEXT_PUBLIC_RESUME_EMBED_ID}/export?format=pdf`;
@@ -61,13 +58,25 @@ export default function ResumePage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="h-[85vh] min-h-[600px] w-full bg-muted/20">
+              <div className="h-[85vh] min-h-[600px] w-full bg-muted/20 relative">
+                {/* Loading Indicator */}
+                {isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
+                    <div className="flex flex-col items-center gap-4">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Loading resume...</p>
+                    </div>
+                  </div>
+                )}
+                
                 <iframe
                   src={embedUrl}
                   title="Professional Resume"
                   className="h-full w-full border-0"
                   loading="lazy"
                   allowFullScreen
+                  onLoad={() => setIsLoading(false)}
+                  onError={() => setIsLoading(false)}
                 />
               </div>
             </CardContent>
