@@ -1,5 +1,7 @@
 import { Suspense } from 'react';
+import { getTutorCourse, getTutorCourses } from '@/lib/tutor-lms';
 import { getProducts } from '@/lib/woocommerce';
+import { getCoursesWithPricing } from '@/lib/tutor-course-utils';
 import CoursesList from '@/components/courses/courses-list';
 import CoursesHeader from '@/components/courses/courses-header';
 import CoursesLoading from '@/components/courses/courses-loading';
@@ -17,14 +19,33 @@ export default async function CoursesPage() {
 
 async function CoursesContent() {
   try {
-    const courses = await getProducts({
+    // Fetch courses from TutorLMS API
+    const tutorCourses = await getTutorCourses({
       per_page: 20,
       status: 'publish',
       orderby: 'date',
       order: 'desc'
     });
+    console.log('tutorCourses: ', tutorCourses[0]);
+    // Fetch WooCommerce products for pricing information
+    const data = await getTutorCourse(tutorCourses[0].id);
+    console.log('data: ', data);
+    let wooProducts: any[] = [];
+    try {
+      wooProducts = await getProducts({
+        per_page: 100, // Get more products to ensure we have pricing data
+        status: 'publish'
+      });
+      console.log('wooProducts: ', wooProducts);
+    } catch (wooError) {
+      console.warn('Failed to fetch WooCommerce products for pricing:', wooError);
+      wooProducts = [];
+    }
 
-    return <CoursesList courses={courses} />;
+    // Combine TutorLMS courses with WooCommerce pricing
+    const coursesWithPricing = await getCoursesWithPricing(tutorCourses, wooProducts);
+
+    return <CoursesList courses={coursesWithPricing} />;
   } catch (error) {
     console.error('Error fetching courses:', error);
     return (

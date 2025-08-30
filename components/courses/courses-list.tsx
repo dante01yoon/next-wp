@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import CourseCard from './course-card';
 import { Button } from '@/components/ui/button';
-import { WooCommerceProduct } from '@/lib/woocommerce-types';
+import { TutorCourseWithPricing } from '@/lib/tutor-course-utils';
 
 interface CoursesListProps {
-  courses: WooCommerceProduct[];
+  courses: TutorCourseWithPricing[];
 }
 
 export default function CoursesList({ courses }: CoursesListProps) {

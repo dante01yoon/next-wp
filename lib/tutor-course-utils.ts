@@ -4,6 +4,26 @@
 import { TutorCourse } from './tutor-lms-types';
 import { WooCommerceProduct } from './woocommerce-types';
 
+// ============= Course Combined Types =============
+
+/**
+ * Combined course type with TutorLMS course data and WooCommerce pricing
+ */
+export interface TutorCourseWithPricing extends Omit<TutorCourse, 'price'> {
+  // WooCommerce pricing information
+  woocommerce_product_id?: number;
+  price: string;
+  sale_price?: string;
+  regular_price?: string;
+  on_sale?: boolean;
+  
+  // Enhanced pricing information
+  is_free: boolean;
+  formatted_price: string;
+  formatted_sale_price?: string;
+  formatted_regular_price?: string;
+}
+
 // ============= Course Price & Free Course Utilities =============
 
 /**
@@ -68,7 +88,7 @@ export async function getTutorCourseIdFromProduct(product: WooCommerceProduct): 
   // Search through meta_data array
   for (const meta of product.meta_data || []) {
     if (possibleMetaKeys.includes(meta.key)) {
-      const courseId = parseInt(meta.value);
+      const courseId = parseInt(String(meta.value));
       if (!isNaN(courseId) && courseId > 0) {
         return courseId;
       }
@@ -413,4 +433,103 @@ export function isValidTutorCourse(course: any): course is TutorCourse {
          course.title && 
          typeof course.title === 'object' &&
          typeof course.title.rendered === 'string';
+}
+
+// ============= Course Combination Utilities =============
+
+/**
+ * Combine TutorLMS course with WooCommerce product pricing
+ * @param tutorCourse - The Tutor course object
+ * @param wooProduct - The related WooCommerce product (optional)
+ * @returns TutorCourseWithPricing - Combined course with pricing info
+ */
+export function combineTutorCourseWithPricing(
+  tutorCourse: TutorCourse, 
+  wooProduct?: WooCommerceProduct
+): TutorCourseWithPricing {
+  // Determine if course is free based on TutorLMS data
+  const isFree = isTutorCourseFree(tutorCourse);
+  
+  let price = '0';
+  let salePrice: string | undefined;
+  let regularPrice = '0';
+  let onSale = false;
+
+  if (wooProduct) {
+    price = wooProduct.price || '0';
+    salePrice = wooProduct.sale_price;
+    regularPrice = wooProduct.regular_price || '0';
+    onSale = wooProduct.on_sale || false;
+  } else if (!isFree) {
+    // Fallback to TutorLMS pricing if no WooCommerce product
+    price = tutorCourse.price || tutorCourse.meta?._tutor_course_price || '0';
+    regularPrice = price;
+  }
+
+  // Format prices
+  const formatPrice = (priceValue: string | undefined): string => {
+    if (!priceValue || priceValue === '0' || priceValue === '') {
+      return 'Free';
+    }
+    return `$${priceValue}`;
+  };
+
+  return {
+    ...tutorCourse,
+    woocommerce_product_id: wooProduct?.id,
+    price,
+    sale_price: salePrice,
+    regular_price: regularPrice,
+    on_sale: onSale,
+    is_free: isFree,
+    formatted_price: formatPrice(price),
+    formatted_sale_price: salePrice ? formatPrice(salePrice) : undefined,
+    formatted_regular_price: formatPrice(regularPrice),
+  };
+}
+
+/**
+ * Get courses with pricing from TutorLMS and WooCommerce
+ * @param tutorCourses - Array of Tutor courses
+ * @param wooProducts - Array of WooCommerce products (optional)
+ * @returns Promise<TutorCourseWithPricing[]> - Combined courses with pricing
+ */
+export async function getCoursesWithPricing(
+  tutorCourses: TutorCourse[],
+  wooProducts?: WooCommerceProduct[]
+): Promise<TutorCourseWithPricing[]> {
+  const coursesWithPricing: TutorCourseWithPricing[] = [];
+
+  for (const tutorCourse of tutorCourses) {
+    let relatedProduct: WooCommerceProduct | undefined;
+
+    if (wooProducts) {
+      // Find related WooCommerce product
+      relatedProduct = wooProducts.find(product => {
+        // Method 1: Check if product meta contains course ID
+        const courseIdMeta = product.meta_data?.find(meta => 
+          ['_course_id', '_tutor_course', '_tutor_course_id'].includes(meta.key) && 
+          parseInt(String(meta.value)) === tutorCourse.id
+        );
+        if (courseIdMeta) return true;
+
+        // Method 2: Check if tutor course meta contains product ID
+        if (tutorCourse.meta?._tutor_course_product_id === product.id) {
+          return true;
+        }
+
+        // Method 3: Check by slug match
+        if (tutorCourse.slug === product.slug) {
+          return true;
+        }
+
+        return false;
+      });
+    }
+
+    const combinedCourse = combineTutorCourseWithPricing(tutorCourse, relatedProduct);
+    coursesWithPricing.push(combinedCourse);
+  }
+
+  return coursesWithPricing;
 }

@@ -12,27 +12,38 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { WooCommerceProduct } from '@/lib/woocommerce-types';
+import { TutorCourseWithPricing } from '@/lib/tutor-course-utils';
 import { useCartContext } from '@/contexts/cart-context';
-import { isWooCommerceProductFree } from '@/lib/tutor-course-utils';
 import { FreeEnrollButton } from './free-enroll-button';
 
 interface CourseCardProps {
-  course: WooCommerceProduct;
+  course: TutorCourseWithPricing;
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
   const { addItem, isInCart } = useCartContext();
-  const courseImage = course.images?.[0]?.src || '/placeholder-course.jpg';
-  const isOnSale = course.on_sale;
+  const courseImage = course.featured_media ? `/api/media/${course.featured_media}` : '/placeholder-course.jpg';
+  const isOnSale = course.on_sale || false;
   const price = course.price || course.regular_price;
   const salePrice = course.sale_price;
-  const isInCartAlready = isInCart(course.id);
+  const isInCartAlready = course.woocommerce_product_id ? isInCart(course.woocommerce_product_id) : false;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(course, 1);
+    if (course.woocommerce_product_id) {
+      // Create a simplified product object for cart
+      const cartProduct = {
+        id: course.woocommerce_product_id,
+        name: course.title.rendered,
+        price: course.price,
+        sale_price: course.sale_price,
+        regular_price: course.regular_price,
+        images: [{ src: courseImage }],
+        slug: course.slug,
+      };
+      addItem(cartProduct as any, 1);
+    }
   };
 
   return (
@@ -40,7 +51,7 @@ export default function CourseCard({ course }: CourseCardProps) {
       <div className="relative aspect-video">
         <Image
           src={courseImage}
-          alt={course.name}
+          alt={course.title.rendered}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -50,9 +61,10 @@ export default function CourseCard({ course }: CourseCardProps) {
             Sale
           </Badge>
         )}
-        {course.featured && (
-          <Badge className="absolute top-2 left-2 bg-blue-500 hover:bg-blue-600">
-            Featured
+        {/* Show Free badge for free courses */}
+        {course.is_free && (
+          <Badge className="absolute top-2 left-2 bg-green-500 hover:bg-green-600">
+            Free
           </Badge>
         )}
       </div>
@@ -60,63 +72,65 @@ export default function CourseCard({ course }: CourseCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="line-clamp-2 text-lg leading-tight">
-            {course.name}
+            {course.title.rendered}
           </CardTitle>
           <div className="flex flex-col items-end">
             {isOnSale && salePrice ? (
               <>
                 <span className="text-lg font-bold text-green-600">
-                  ${salePrice}
+                  {course.formatted_sale_price}
                 </span>
                 <span className="text-sm text-muted-foreground line-through">
-                  ${course.regular_price}
+                  {course.formatted_regular_price}
                 </span>
               </>
             ) : (
               <span className="text-lg font-bold">
-                {price === '0' || price === '' ? 'Free' : `$${price}`}
+                {course.formatted_price}
               </span>
             )}
           </div>
         </div>
         
-        {course.short_description && (
+        {course.excerpt?.rendered && (
           <CardDescription 
             className="line-clamp-3"
-            dangerouslySetInnerHTML={{ __html: course.short_description }}
+            dangerouslySetInnerHTML={{ __html: course.excerpt.rendered }}
           />
         )}
       </CardHeader>
 
       <CardContent className="pb-3">
         <div className="flex flex-wrap gap-2 mb-3">
-          {course.categories.slice(0, 3).map((category) => (
-            <Badge key={category.id} variant="secondary" className="text-xs">
-              {category.name}
+          {/* Course level badge */}
+          {course.course_level && (
+            <Badge variant="secondary" className="text-xs">
+              {course.course_level}
             </Badge>
-          ))}
+          )}
+          {/* Course duration badge */}
+          {course.course_duration && (
+            <Badge variant="outline" className="text-xs">
+              {course.course_duration}
+            </Badge>
+          )}
         </div>
         
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-4">
-            {course.average_rating && parseFloat(course.average_rating) > 0 && (
+            {course.rating && course.rating.rating_avg > 0 && (
               <div className="flex items-center gap-1">
                 <span className="text-yellow-500">★</span>
-                <span>{parseFloat(course.average_rating).toFixed(1)}</span>
-                <span>({course.rating_count})</span>
+                <span>{course.rating.rating_avg.toFixed(1)}</span>
+                <span>({course.rating.rating_count})</span>
               </div>
             )}
           </div>
           
           <div className="flex items-center gap-2">
-            {course.virtual && (
+            {course.total_enrolled && course.total_enrolled > 0 && (
               <Badge variant="outline" className="text-xs">
-                Online
-              </Badge>
-            )}
-            {course.downloadable && (
-              <Badge variant="outline" className="text-xs">
-                Downloadable
+                {course.total_enrolled} enrolled
               </Badge>
             )}
           </div>
@@ -125,16 +139,16 @@ export default function CourseCard({ course }: CourseCardProps) {
 
       <CardFooter className="pt-0">
         <div className="flex gap-2 w-full">
-          {/* Check if course is free using WooCommerce product price */}
-          {isWooCommerceProductFree(course) ? (
+          {/* Check if course is free using TutorLMS data */}
+          {course.is_free ? (
             <div className="w-full space-y-2">
               <FreeEnrollButton 
                 course={{
                   id: course.id,
                   slug: course.slug,
-                  name: course.name,
+                  name: course.title.rendered,
                   price: course.price,
-                  price_type: course.price === '0' || course.price === '' ? 'free' : 'paid'
+                  price_type: course.price_type || 'free'
                 }}
                 size="sm"
                 className="w-full"
@@ -153,7 +167,7 @@ export default function CourseCard({ course }: CourseCardProps) {
                 </Link>
               </Button>
               
-              {price !== '0' && price !== '' && (
+              {course.woocommerce_product_id && price !== '0' && price !== '' && (
                 <Button 
                   variant={isInCartAlready ? "secondary" : "outline"} 
                   className="flex-1"

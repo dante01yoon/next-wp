@@ -117,7 +117,8 @@ export async function getTutorCourses(
   params: TutorCoursesQueryParams = {},
   options: FetchOptions = {}
 ): Promise<TutorCourse[]> {
-  return tutorFetch<TutorCourse[]>("/courses", options, params);
+  const { data } = await tutorFetch<TutorCourse[]>("/courses", options, params);
+  return data.posts;
 }
 
 /**
